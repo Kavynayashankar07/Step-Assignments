@@ -1,88 +1,106 @@
 import java.util.*;
 
-public class TransactionFeeSorting{
+class Transaction {
+    String id;
+    double fee;
+    String timestamp;
 
-    static void linearSearch(String[] arr, String target) {
-        int first = -1, last = -1;
-        int comparisons = 0;
+    Transaction(String id, double fee, String timestamp) {
+        this.id = id;
+        this.fee = fee;
+        this.timestamp = timestamp;
+    }
 
-        for (int i = 0; i < arr.length; i++) {
-            comparisons++;
-            if (arr[i].equals(target)) {
-                if (first == -1) first = i;
-                last = i;
+    public String toString() {
+        return id + ":" + fee + "@" + timestamp;
+    }
+}
+
+public class TransactionFeeSorting {
+    static void bubbleSort(ArrayList<Transaction> list) {
+        int n = list.size();
+        int passes = 0, swaps = 0;
+
+        for (int i = 0; i < n - 1; i++) {
+            boolean swapped = false;
+            passes++;
+            for (int j = 0; j < n - i - 1; j++) {
+                if (list.get(j).fee > list.get(j + 1).fee) {
+                    Transaction temp = list.get(j);
+                    list.set(j, list.get(j + 1));
+                    list.set(j + 1, temp);
+                    swaps++;
+                    swapped = true;
+                }
+            }
+            if (!swapped) break;
+        }
+
+        System.out.println("Bubble Sort Result:");
+        for (Transaction t : list) System.out.print(t + " ");
+        System.out.println("\nPasses: " + passes + " Swaps: " + swaps);
+    }
+
+    static void insertionSort(ArrayList<Transaction> list) {
+        int n = list.size();
+
+        for (int i = 1; i < n; i++) {
+            Transaction key = list.get(i);
+            int j = i - 1;
+
+            while (j >= 0 && (list.get(j).fee > key.fee ||
+                    (list.get(j).fee == key.fee &&
+                            list.get(j).timestamp.compareTo(key.timestamp) > 0))) {
+                list.set(j + 1, list.get(j));
+                j--;
+            }
+            list.set(j + 1, key);
+        }
+
+        System.out.println("Insertion Sort Result:");
+        for (Transaction t : list) System.out.print(t + " ");
+        System.out.println();
+    }
+
+    static void findOutliers(ArrayList<Transaction> list) {
+        System.out.println("High-fee Outliers (>50):");
+        boolean found = false;
+        for (Transaction t : list) {
+            if (t.fee > 50) {
+                System.out.println(t);
+                found = true;
             }
         }
-
-        System.out.println("Linear Search:");
-        System.out.println("First occurrence: " + first);
-        System.out.println("Last occurrence: " + last);
-        System.out.println("Comparisons: " + comparisons);
-        System.out.println("Time Complexity: O(n)");
-    }
-
-    static int binarySearch(String[] arr, String target, int[] comp) {
-        int low = 0, high = arr.length - 1;
-
-        while (low <= high) {
-            comp[0]++;
-            int mid = (low + high) / 2;
-
-            if (arr[mid].equals(target)) return mid;
-            else if (arr[mid].compareTo(target) < 0) low = mid + 1;
-            else high = mid - 1;
-        }
-        return -1;
-    }
-
-    static int countOccurrences(String[] arr, String target, int index) {
-        if (index == -1) return 0;
-
-        int count = 1;
-
-        int i = index - 1;
-        while (i >= 0 && arr[i].equals(target)) {
-            count++;
-            i--;
-        }
-
-        i = index + 1;
-        while (i < arr.length && arr[i].equals(target)) {
-            count++;
-            i++;
-        }
-
-        return count;
+        if (!found) System.out.println("None");
     }
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        System.out.print("Enter number of logs: ");
+        System.out.print("Enter number of transactions: ");
         int n = sc.nextInt();
 
-        String[] logs = new String[n];
+        ArrayList<Transaction> transactions = new ArrayList<>();
 
-        System.out.println("Enter account IDs:");
         for (int i = 0; i < n; i++) {
-            logs[i] = sc.next();
+            System.out.print("Enter id fee timestamp: ");
+            String id = sc.next();
+            double fee = sc.nextDouble();
+            String ts = sc.next();
+            transactions.add(new Transaction(id, fee, ts));
         }
 
-        System.out.print("Enter target account ID: ");
-        String target = sc.next();
+        ArrayList<Transaction> bubbleList = new ArrayList<>(transactions);
+        ArrayList<Transaction> insertionList = new ArrayList<>(transactions);
 
-        linearSearch(logs, target);
+        if (n <= 100) {
+            bubbleSort(bubbleList);
+        } else if (n <= 1000) {
+            insertionSort(insertionList);
+        } else {
+            System.out.println("Large dataset - Use advanced sorting");
+        }
 
-        Arrays.sort(logs);
-
-        int[] comp = {0};
-        int index = binarySearch(logs, target, comp);
-        int count = countOccurrences(logs, target, index);
-
-        System.out.println("\nBinary Search (on sorted data):");
-        System.out.println("Found at index: " + index);
-        System.out.println("Comparisons: " + comp[0]);
-        System.out.println("Count occurrences: " + count);
-        System.out.println("Time Complexity: O(log n)");
+        findOutliers(transactions);
     }
 }
